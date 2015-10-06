@@ -10,6 +10,17 @@ and ty_desc =
   | Ty_link of ty
 [@@deriving show]
 
+and type_expr = {
+  te_desc : type_expr_desc;
+  mutable te_ty : ty option;
+}[@@deriving show]
+
+and type_expr_desc =
+  | Type_var of string
+  | Type_fun of type_expr * type_expr
+  | Type_const of string
+[@@deriving show]
+
 and pattern = {
   p_desc : pat_desc;
   mutable p_ty :  ty option;
