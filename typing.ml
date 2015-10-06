@@ -1,37 +1,5 @@
 open Ast
 
-module Types = struct
-  let counter = ref 0
-  let c_bool = {t_desc = Ty_const "%bool"; t_level = 1000}
-  let c_int = {t_desc = Ty_const "%int"; t_level = 1000}
-  let fresh_var () = incr counter; {t_desc = Ty_var ("a" ^ string_of_int !counter); t_level = 1000}
-  let new_ty desc = {t_desc = desc; t_level = 1000}
-
-  let rec repr t =
-    match t.t_desc with
-    | Ty_link t ->
-      repr t
-    | _ ->
-      t
-
-  let link t1 t2 =
-    t1.t_desc <- Ty_link t2
-
-  let iter f t =
-    match t.t_desc with
-    | Ty_var _ | Ty_const _ ->
-      ()
-    | Ty_fun (t1, t2) ->
-      f t1; f t2
-    | Ty_link t ->
-      f t
-end
-
-module Env = struct
-  let extend env x t = (x, t) :: env
-  let lookup env x = List.assoc x env
-end
-
 exception Unify
 
 let rec occur t1 t2 =
@@ -88,7 +56,7 @@ let rec expression env expr =
     let t1 = expression env e1 in
     let t2 = expression env e2 in
     let t3 = expression env e3 in
-    unify t1 Types.c_bool;
+    unify t1 Predef.ty_bool;
     unify t2 t3;
     ty_expr t2
   | Expr_fun (p, e) ->
@@ -104,9 +72,9 @@ let rec expression env expr =
   | Expr_var x ->
     ty_expr (Env.lookup env x)
   | Expr_int _ ->
-    ty_expr Types.c_int
+    ty_expr Predef.ty_int
   | Expr_bool _ ->
-    ty_expr Types.c_bool
+    ty_expr Predef.ty_bool
 
 let top_phrase env top =
   let ty_top ty = top.tp_ty <- Some ty; ty in

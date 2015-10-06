@@ -1,6 +1,6 @@
 type ty = {
   mutable t_desc : ty_desc;
-  t_level : int;
+  mutable t_level : int;
 }[@@deriving show]
 
 and ty_desc =
