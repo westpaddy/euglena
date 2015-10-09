@@ -81,33 +81,3 @@ let instantiate t =
   let t' = copy t in
   cleanup_types ();
   t'
-
-let pp_repr fmt t =
-  let subst = ref [] and counter = ref 0 in
-  let rec iter weak t =
-    match t.t_desc with
-    | Ty_var x ->
-      let x = begin try List.assoc t !subst with Not_found ->
-        let v = Char.escaped (char_of_int ((Char.code 'a') + !counter mod 26)) in
-        subst := (t, v) :: !subst;
-        incr counter;
-        v
-      end in
-      if t.t_level = generalize_level then
-        Format.fprintf fmt "'%s" x
-      else
-        Format.fprintf fmt "'_%s" x
-    | Ty_const x ->
-      Format.fprintf fmt "%s" x
-    | Ty_fun (t1, t2) ->
-      if weak then Format.fprintf fmt "(";
-      iter true t1;
-      Format.fprintf fmt " -> ";
-      iter false t2;
-      if weak then Format.fprintf fmt ")"
-    | Ty_link t ->
-      iter weak t
-    | Ty_subst _ ->
-      assert false
-  in
-  iter false t
