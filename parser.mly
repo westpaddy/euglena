@@ -5,6 +5,9 @@
     let mk_expr e_desc = { e_desc; e_ty = None }
     let mk_pat p_desc = { p_desc; p_ty = None }
     let mk_type_expr te_desc = { te_desc; te_ty = None }
+
+    let mfun params body =
+      List.fold_left (fun e p -> mk_expr (Expr_fun (p, e))) body (List.rev params)
 %}
 
 %token IF THEN ELSE LET REC IN FUN TRUE FALSE
@@ -29,7 +32,7 @@ top_phrase:
   LET; r = boption(REC); x = pat; EQ; e = expr; SEMISEMI;
     { mk_top (Top_let (r, x, e)) }
 | LET; r = boption(REC); f = VAR; params = nonempty_list(pat); EQ; e = expr; SEMISEMI;
-    { mk_top (Top_let (r, mk_pat (Pat_var f), List.fold_left (fun e p -> mk_expr (Expr_fun (p, e))) e (List.rev params))) }
+    { mk_top (Top_let (r, mk_pat (Pat_var f), mfun params e)) }
 | e = expr; SEMISEMI;
     { mk_top (Top_expr e) }
   ;;
@@ -43,11 +46,11 @@ expr:
   LET; r = boption(REC); x = pat; EQ; e1 = expr; IN; e2 = expr;
     { mk_expr (Expr_let (r, x, e1, e2)) }
 | LET; r = boption(REC); f = VAR; params = nonempty_list(pat); EQ; e1 = expr; IN; e2 = expr;
-    { mk_expr (Expr_let (r, mk_pat (Pat_var f), List.fold_left (fun e p -> mk_expr (Expr_fun (p, e))) e1 (List.rev params), e2)) }
+    { mk_expr (Expr_let (r, mk_pat (Pat_var f), mfun params e1, e2)) }
 | IF; e1 = expr; THEN; e2 = expr; ELSE; e3 = expr;
     { mk_expr (Expr_if (e1, e2, e3)) }
-| FUN; x = pat; RARROW; e = expr;
-    { mk_expr (Expr_fun (x, e)) }
+| FUN; params = nonempty_list(pat); RARROW; e = expr;
+    { mfun params e }
 | e1 = expr; o = bin_op; e2 = expr;
     { mk_expr (Expr_app (mk_expr (Expr_app (o, e1)), e2)) }
 | e = app_expr;
@@ -94,8 +97,8 @@ a_expr:
 pat:
   x = VAR;
     { mk_pat (Pat_var x) }
-| LPAREN; x = VAR; COL; type_expr; RPAREN;
-    { mk_pat (Pat_var x) }
+| LPAREN; p = pat; COL; t = type_expr; RPAREN;
+    { mk_pat (Pat_annot (p, t)) }
   ;;
 
 type_expr:

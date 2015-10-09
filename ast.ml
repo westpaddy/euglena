@@ -30,6 +30,7 @@ and pattern = {
 
 and pat_desc =
   | Pat_var of string
+  | Pat_annot of pattern * type_expr
 [@@deriving show]
 
 and expression = {

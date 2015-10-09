@@ -65,6 +65,11 @@ let rec pattern env pat ty =
       let t = Types.fresh_var () in
       ref_env := Env.extend !ref_env x t;
       ty_pat t
+    | Pat_annot (pat, te) ->
+      let pat_t = iter pat in
+      let te_t = type_expr te in
+      unify pat_t te_t;
+      ty_pat pat_t
   in
   unify ty (iter pat);
   !ref_env
