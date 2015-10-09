@@ -1,6 +1,7 @@
 type ty = {
   mutable t_desc : ty_desc;
   mutable t_level : int;
+  t_id : int;
 }[@@deriving show]
 
 and ty_desc =
@@ -8,6 +9,7 @@ and ty_desc =
   | Ty_fun of ty * ty
   | Ty_const of string
   | Ty_link of ty
+  | Ty_subst of ty
 [@@deriving show]
 
 and type_expr = {

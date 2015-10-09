@@ -17,6 +17,7 @@
 rule token = parse
     [' ' '\t' '\n']+ { token lexbuf }
   | eof { raise EOF }
+  | '\'' { Parser.QUOTE }
   | '(' { Parser.LPAREN }
   | ')' { Parser.RPAREN }
   | '+' { Parser.PLUS }

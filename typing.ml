@@ -3,21 +3,23 @@ open Ast
 exception Unify
 
 let rec occur t1 t2 =
-  if t1 = t2 then raise Unify else
+  if t1 == t2 then raise Unify else
     Types.iter (occur t1) t2
 
 let rec unify t1 t2 =
   let t1 = Types.repr t1 in
   let t2 = Types.repr t2 in
-  if t1 = t2 then () else
+  if t1 == t2 then () else
     let d1 = t1.t_desc in
     let d2 = t2.t_desc in
     match d1, d2 with
     | Ty_var _, _ ->
       occur t1 t2;
+      Types.update_level t2 t1.t_level;
       Types.link t1 t2
     | _, Ty_var _ ->
       occur t2 t1;
+      Types.update_level t1 t2.t_level;
       Types.link t2 t1
     | _ ->
       Types.link t1 t2;
@@ -35,14 +37,24 @@ let rec unify t1 t2 =
         raise Unify
 
 let rec type_expr te =
-  let ty_te ty = te.te_ty <- Some ty; ty in
-  match te.te_desc with
-  | Type_var x ->
-    ty_te (Types.new_ty (Ty_var x))
-  | Type_fun (te1, te2) ->
-    ty_te (Types.new_ty (Ty_fun (type_expr te1, type_expr te2)))
-  | Type_const x ->
-    ty_te (Types.new_ty (Ty_const x))
+  let table = ref [] in
+  let rec iter te =
+    let ty_te ty = te.te_ty <- Some ty; ty in
+    match te.te_desc with
+    | Type_var x ->
+      let ty = begin try List.assoc x !table with
+        | Not_found ->
+          let ty = Types.new_ty (Ty_var x) in
+          table := (x, ty) :: !table; ty
+      end
+      in
+      ty_te ty
+    | Type_fun (te1, te2) ->
+      ty_te (Types.new_ty (Ty_fun (iter te1, iter te2)))
+    | Type_const x ->
+      ty_te (Types.new_ty (Ty_const x))
+  in
+  iter te
 
 let rec pattern env pat ty =
   let ref_env = ref env in
@@ -82,7 +94,7 @@ let rec expression env expr =
     unify t1 (Types.new_ty (Ty_fun (t2, ran)));
     ty_expr ran
   | Expr_var x ->
-    ty_expr (Env.lookup env x)
+    ty_expr (Types.instantiate (Env.lookup env x))
   | Expr_int _ ->
     ty_expr Predef.ty_int
   | Expr_bool _ ->
@@ -96,6 +108,7 @@ and let_bind env is_rec pat expr =
   unify pat_t t;
   let env' = pattern env pat pat_t in
   Types.decr_level ();
+  Types.generalize t;
   (env', t)
 
 let top_phrase env top =

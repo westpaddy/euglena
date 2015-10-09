@@ -9,7 +9,7 @@ let table = [
   ("fun x -> x;;", "'a -> 'a;;");
   ("fun x -> fun y -> x;;", "'a -> 'b -> 'a;;");
   ("fun x -> fun y -> y;;", "'a -> 'b -> 'b;;");
-  ("(fun x -> x + 1) 2 + (fun x -> x + -1) 3;;", "int;;");
+  ("(fun x -> x + 1) 2 + (fun x -> x - 1) 3;;", "int;;");
   ("fun f -> fun g -> fun x -> g (f x);;",
    "('a -> 'b) -> ('b -> 'c) -> 'a -> 'c;;");
   ("fun x -> fun y -> fun z -> x z (y z);;",
@@ -107,7 +107,7 @@ let table = [
    "(('a -> 'b) -> 'a -> 'b) -> 'a -> 'b;;");
   ("fun f -> let rec x = fun z -> f (x z) in x 666;;",
    "('a -> 'a) -> 'a;;");
-  ("let rec f = fun x -> fun y -> if x < 0 then y else f (x + -1) y in f;;",
+  ("let rec f = fun x -> fun y -> if x < 0 then y else f (x - 1) y in f;;",
    "int -> 'a -> 'a;;");
   ("fun f -> fun g -> let rec h = fun x -> h (g (f x)) in h;;",
    "('a -> 'b) -> ('b -> 'a) -> 'a -> 'c;;");
@@ -116,7 +116,7 @@ let table = [
   ("let rec looq = fun f -> fun x -> (looq f) (x f) in looq;;", ";;");
   ("fun x -> let rec f = fun y -> x + 1 in x;;", "int -> int;;");
   ("let rec ind = fun x -> fun f -> fun n ->
-         if n < 1 then x else f (ind x f (n + -1)) in ind;;",
+         if n < 1 then x else f (ind x f (n - 1)) in ind;;",
    "'a -> ('a -> 'a) -> int -> 'a;;");
   ("let rec f = fun x -> f (x f) in f;;", ";;");
   ("let rec f = fun z -> f z (fun g -> fun h -> h (g h)) in f;;", ";;");
@@ -240,7 +240,7 @@ let table = [
    "bool -> 'a -> ('a -> (('a -> 'b) -> 'b) -> 'c) -> 'c;;");
   (* polymorphic *)
   ("let rec apply = fun n -> fun f -> fun x ->
-         if n < 1 then x else apply (n + -1) f (f x) in
+         if n < 1 then x else apply (n - 1) f (f x) in
          fun n ->
            if (apply n (fun x -> if x then false else true) true)
            then apply n (fun x -> x + 1) 0
@@ -280,7 +280,7 @@ let table = [
    "int;;");
   (* polymorphic *)
   ("let rec apply = fun n -> fun f -> fun x ->
-         if n < 1 then x else apply (n + -1) f (f x);;
+         if n < 1 then x else apply (n - 1) f (f x);;
        fun n ->
          if (apply n (fun x -> if x then false else true) true)
          then apply n (fun x -> x + 1) 0
@@ -372,7 +372,7 @@ let table2 = [
    ";;");
   (* monomorphic *)
   ("let rec apply = fun n -> fun f -> fun x ->
-         if n < 1 then x else apply (n + -1) f (f x) in
+         if n < 1 then x else apply (n - 1) f (f x) in
          fun n ->
           if (apply n (fun x -> if x then false else true) true)
           then apply n (fun x -> x + 1) 0
