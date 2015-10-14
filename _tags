@@ -1,2 +1,3 @@
-true: debug
-<*>: package(ppx_deriving.std)
+true: debug, safe_string, package(ppx_deriving.std)
+<sh.ml>: package(lwt, js_of_ocaml, js_of_ocaml.syntax), syntax(camlp4o)
+<sh.byte>: package(lwt, js_of_ocaml)

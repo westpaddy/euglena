@@ -1,0 +1,20 @@
+#canvas {
+    font-size: 14px;
+    font-family: Consolas, 'Courier New', Courier, Monaco, monospace;
+}
+
+#canvas ul {
+    list-style-type: none;
+    padding: 0;
+}
+
+#canvas li {
+    padding: 0;
+}
+
+#canvas input {
+    font: bold 14px Consolas, 'Courier New', Courier, Monaco, monospace;
+    height: 14px;
+    border: 0;
+    outline: 0;
+}
