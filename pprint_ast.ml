@@ -1,6 +1,6 @@
 open Ast
 
-let ty fmt t =
+let rec ty fmt t =
   let subst = ref [] and counter = ref 0 in
   let rec iter weak t =
     match t.t_desc with
@@ -23,6 +23,8 @@ let ty fmt t =
       Format.fprintf fmt " -> ";
       iter false t2;
       if weak then Format.fprintf fmt ")"
+    | Ty_refine (_, p, e) ->
+      Format.fprintf fmt "{@@ %a | %a @@}" pattern p expression e
     | Ty_link t ->
       iter weak t
     | Ty_subst _ ->
@@ -30,16 +32,16 @@ let ty fmt t =
   in
   iter false t
 
-let pattern fmt pat =
+and pattern fmt pat =
   let rec iter weak pat =
     if weak then Format.fprintf fmt "(";
     begin match pat.p_desc with
     | Pat_var x ->
       begin match pat.p_ty with
       | Some t ->
-        Format.fprintf fmt "%s : %a" x ty t
+        Format.fprintf fmt "%s/%d : %a" x.i_desc x.i_uid ty t
       | None ->
-        Format.fprintf fmt "%s" x
+        Format.fprintf fmt "%s/%d" x.i_desc x.i_uid
       end
     | Pat_annot (p, _) ->
       iter false p
@@ -48,7 +50,7 @@ let pattern fmt pat =
   in
   iter true pat
 
-let expression fmt expr =
+and expression fmt expr =
   let rec iter n fmt expr =
     match expr.e_desc with
     | Expr_let (is_rec, p, e1, e2) ->
@@ -71,7 +73,7 @@ let expression fmt expr =
         (iter 0) e1
         (iter 0) e2
     | Expr_var x ->
-      Format.fprintf fmt "%s" x
+      Format.fprintf fmt "%s/%d" x.i_desc x.i_uid
     | Expr_int i ->
       Format.fprintf fmt "%d" i
     | Expr_bool b ->

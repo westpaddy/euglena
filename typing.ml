@@ -1,14 +1,15 @@
 open Ast
 
 exception Unify
+exception Not_bound of identifier
 
 let rec occur t1 t2 =
   if t1 == t2 then raise Unify else
     Types.iter (occur t1) t2
 
 let rec unify t1 t2 =
-  let t1 = Types.repr t1 in
-  let t2 = Types.repr t2 in
+  let t1 = Types.unref t1 in
+  let t2 = Types.unref t2 in
   if t1 == t2 then () else
     let d1 = t1.t_desc in
     let d2 = t2.t_desc in
@@ -36,7 +37,7 @@ let rec unify t1 t2 =
         t1.t_desc <- d1;
         raise Unify
 
-let rec type_expr te =
+let rec type_expr env te =
   let table = ref [] in
   let rec iter te =
     let ty_te ty = te.te_ty <- Some ty; ty in
@@ -53,10 +54,15 @@ let rec type_expr te =
       ty_te (Types.new_ty (Ty_fun (iter te1, iter te2)))
     | Type_const x ->
       ty_te (Types.new_ty (Ty_const x))
+    | Type_refine (p, e) ->
+      let ty = Types.fresh_var () in
+      let new_env = pattern env p ty in
+      unify (expression new_env e) Predef.ty_bool;
+      ty_te (Types.new_ty (Ty_refine (ty, p, e)))
   in
   iter te
 
-let rec pattern env pat ty =
+and pattern env pat ty =
   let ref_env = ref env in
   let rec iter pat =
     let ty_pat ty = pat.p_ty <- Some ty; ty in
@@ -65,16 +71,21 @@ let rec pattern env pat ty =
       let t = Types.fresh_var () in
       ref_env := Env.extend !ref_env x t;
       ty_pat t
+    | Pat_annot ({p_desc = Pat_var x} as b, te) ->
+      let te_t = type_expr env te in
+      ref_env := Env.extend !ref_env x te_t;
+      b.p_ty <- Some te_t;
+      ty_pat te_t
     | Pat_annot (pat, te) ->
+      let te_t = type_expr env te in
       let pat_t = iter pat in
-      let te_t = type_expr te in
       unify pat_t te_t;
       ty_pat pat_t
   in
   unify ty (iter pat);
   !ref_env
 
-let rec expression env expr =
+and expression env expr =
   let ty_expr ty = expr.e_ty <- Some ty; ty in
   match expr.e_desc with
   | Expr_let (r, p, e1, e2) ->
@@ -99,7 +110,12 @@ let rec expression env expr =
     unify t1 (Types.new_ty (Ty_fun (t2, ran)));
     ty_expr ran
   | Expr_var x ->
-    ty_expr (Types.instantiate (Env.lookup env x))
+    let t = try
+        Env.lookup env x
+      with Not_found ->
+        raise (Not_bound x)
+    in
+    ty_expr (Types.instantiate t)
   | Expr_int _ ->
     ty_expr Predef.ty_int
   | Expr_bool _ ->

@@ -10,9 +10,11 @@ let () =
           let (new_env, t) = Typing.top_phrase !env p in
           env := new_env;
           Format.printf "@[%a@.%a@.@]" Pprint_ast.top_phrase p Pprint_ast.ty t;
-        with
-        | Typing.Unify ->
-          Format.printf "Type error@.";
+      with
+      | Parser.Error ->
+        Format.printf "@[Parsing error@]@."
+      | Typing.Unify ->
+        Format.printf "Type error@."
       end
     done
   with Lexer.EOF ->

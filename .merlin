@@ -1,1 +1,2 @@
 B _build
+PKG lwt js_of_ocaml

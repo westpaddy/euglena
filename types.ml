@@ -44,6 +44,7 @@ let rec copy t =
   let rec copy_desc = function
     | Ty_var _ | Ty_const _ as d -> d
     | Ty_fun (t1, t2) -> Ty_fun (copy t1, copy t2)
+    | Ty_refine (t, p, e) -> Ty_refine (copy t, p, e)
     | Ty_link t -> copy_desc t.t_desc
     | Ty_subst _ -> assert false
   in
@@ -65,6 +66,8 @@ let iter f t =
     ()
   | Ty_fun (t1, t2) ->
     f t1; f t2
+  | Ty_refine (t, p, e) ->
+    f t
   | Ty_link t ->
     f t
   | Ty_subst t ->
@@ -81,3 +84,12 @@ let instantiate t =
   let t' = copy t in
   cleanup_types ();
   t'
+
+let rec unref t =
+  match t.t_desc with
+  | Ty_link t ->
+    unref t
+  | Ty_refine (t, _, _) ->
+    unref t
+  | _ ->
+    t

@@ -16,14 +16,14 @@ let test (e, ty) =
   let ty' = match !last_ty with
     | None -> "Expected error"
     | Some ty ->
-      Format.fprintf Format.str_formatter "%a" Types.pp_repr ty;
+      Format.fprintf Format.str_formatter "%a" Pprint_ast.ty ty;
       Format.flush_str_formatter ()
   in
   let ty = if ty = ";;" then "Expected error" else
       try
         let p = Parser.parse_type_expr Lexer.token (Lexing.from_string ty) in
-        let t = Typing.type_expr p in
-        Format.fprintf Format.str_formatter "%a" Types.pp_repr t;
+        let t = Typing.type_expr Predef.env p in
+        Format.fprintf Format.str_formatter "%a" Pprint_ast.ty t;
         Format.flush_str_formatter ()
       with
       | _ ->

@@ -8,6 +8,7 @@ and ty_desc =
   | Ty_var of string
   | Ty_fun of ty * ty
   | Ty_const of string
+  | Ty_refine of ty * pattern * expression
   | Ty_link of ty
   | Ty_subst of ty
 [@@deriving show]
@@ -21,7 +22,13 @@ and type_expr_desc =
   | Type_var of string
   | Type_fun of type_expr * type_expr
   | Type_const of string
+  | Type_refine of pattern * expression
 [@@deriving show]
+
+and identifier = {
+  i_desc : string;
+  mutable i_uid : int;
+}[@@deriving show]
 
 and pattern = {
   p_desc : pat_desc;
@@ -29,7 +36,7 @@ and pattern = {
 }[@@deriving show]
 
 and pat_desc =
-  | Pat_var of string
+  | Pat_var of identifier
   | Pat_annot of pattern * type_expr
 [@@deriving show]
 
@@ -43,7 +50,7 @@ and expr_desc =
   | Expr_if of expression * expression * expression
   | Expr_fun of pattern * expression
   | Expr_app of expression * expression
-  | Expr_var of string
+  | Expr_var of identifier
   | Expr_int of int
   | Expr_bool of bool
 [@@deriving show]

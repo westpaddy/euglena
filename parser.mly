@@ -4,6 +4,7 @@
     let mk_top tp_desc = { tp_desc; tp_ty = None }
     let mk_expr e_desc = { e_desc; e_ty = None }
     let mk_pat p_desc = { p_desc; p_ty = None }
+    let mk_id s = { i_desc = s; i_uid = -1 }
     let mk_type_expr te_desc = { te_desc; te_ty = None }
 
     let mfun params body =
@@ -12,7 +13,7 @@
 
 %token IF THEN ELSE LET REC IN FUN TRUE FALSE
 %token LPAREN RPAREN PLUS MINUS STAR SLASH LT GT EQ RARROW SEMISEMI QUOTE
-%token COL
+%token COL AT
 %token <int> INT
 %token <string> VAR
 
@@ -32,7 +33,7 @@ top_phrase:
   LET; r = boption(REC); x = pat; EQ; e = expr; SEMISEMI;
     { mk_top (Top_let (r, x, e)) }
 | LET; r = boption(REC); f = VAR; params = nonempty_list(pat); EQ; e = expr; SEMISEMI;
-    { mk_top (Top_let (r, mk_pat (Pat_var f), mfun params e)) }
+    { mk_top (Top_let (r, mk_pat (Pat_var (mk_id f)), mfun params e)) }
 | e = expr; SEMISEMI;
     { mk_top (Top_expr e) }
   ;;
@@ -46,7 +47,7 @@ expr:
   LET; r = boption(REC); x = pat; EQ; e1 = expr; IN; e2 = expr;
     { mk_expr (Expr_let (r, x, e1, e2)) }
 | LET; r = boption(REC); f = VAR; params = nonempty_list(pat); EQ; e1 = expr; IN; e2 = expr;
-    { mk_expr (Expr_let (r, mk_pat (Pat_var f), mfun params e1, e2)) }
+    { mk_expr (Expr_let (r, mk_pat (Pat_var (mk_id f)), mfun params e1, e2)) }
 | IF; e1 = expr; THEN; e2 = expr; ELSE; e3 = expr;
     { mk_expr (Expr_if (e1, e2, e3)) }
 | FUN; params = nonempty_list(pat); RARROW; e = expr;
@@ -68,7 +69,7 @@ a_expr:
   LPAREN; e = expr; RPAREN;
     { e }
 | x = VAR;
-    { mk_expr (Expr_var x) }
+    { mk_expr (Expr_var (mk_id x)) }
 | i = INT;
     { mk_expr (Expr_int i) }
 | TRUE;
@@ -79,26 +80,28 @@ a_expr:
 
 %inline bin_op:
   PLUS;
-    { mk_expr (Expr_var "%+") }
+    { mk_expr (Expr_var (mk_id "%+")) }
 | MINUS;
-    { mk_expr (Expr_var "%-") }
+    { mk_expr (Expr_var (mk_id "%-")) }
 | STAR;
-    { mk_expr (Expr_var "%*") }
+    { mk_expr (Expr_var (mk_id "%*")) }
 | SLASH;
-    { mk_expr (Expr_var "%/") }
+    { mk_expr (Expr_var (mk_id "%/")) }
 | LT;
-    { mk_expr (Expr_var "%<") }
+    { mk_expr (Expr_var (mk_id "%<")) }
 | GT;
-    { mk_expr (Expr_var "%>") }
+    { mk_expr (Expr_var (mk_id "%>")) }
 | EQ;
-    { mk_expr (Expr_var "%=") }
+    { mk_expr (Expr_var (mk_id "%=")) }
   ;;
 
 pat:
   x = VAR;
-    { mk_pat (Pat_var x) }
+    { mk_pat (Pat_var (mk_id x)) }
 | LPAREN; p = pat; COL; t = type_expr; RPAREN;
     { mk_pat (Pat_annot (p, t)) }
+| LPAREN; x = VAR; AT; e = expr; RPAREN;
+    { mk_pat (Pat_annot (mk_pat (Pat_var (mk_id x)), mk_type_expr (Type_refine (mk_pat (Pat_var (mk_id x)), e)))) }
   ;;
 
 type_expr:

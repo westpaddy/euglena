@@ -14,7 +14,9 @@
 
 #canvas input {
     font: bold 14px Consolas, 'Courier New', Courier, Monaco, monospace;
+    width: 700px;
     height: 14px;
     border: 0;
     outline: 0;
+    background-color: aqua;
 }

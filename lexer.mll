@@ -29,6 +29,7 @@ rule token = parse
   | '=' { Parser.EQ }
   | "->" { Parser.RARROW }
   | ":" { Parser.COL }
+  | "@" { Parser.AT }
   | ";;" { Parser.SEMISEMI }
   | ['0'-'9']+ as lxm { Parser.INT (int_of_string lxm) }
   | ['_' 'a'-'z'] [''' '_' 'a'-'z' 'A'-'Z' '0'-'9']* as id
