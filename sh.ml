@@ -1,11 +1,14 @@
+open Ast
+
 let env = ref Predef.env
 
 let process s =
   try
-    let p = Parser.top_phrase Lexer.token (Lexing.from_string s) in
-    let (new_env, ty) = Typing.top_phrase !env p in
+    let tp = Parser.top_phrase Lexer.token (Lexing.from_string s) in
+    let (new_env, tp') = Typing.top_phrase !env tp in
     env := new_env;
-    Format.fprintf Format.str_formatter "%a" Pprint_ast.ty ty;
+    let tp'' = Cast_remover.remove_cast tp' in
+    Format.fprintf Format.str_formatter "@[<hov 2>Compilation result:@\n%a@]@.@[<hov 2>Inferred type:@\n%a@]" Pprint_ast.top_phrase tp'' Pprint_ast.ty tp''.tp_ty;
     Format.flush_str_formatter ()
   with
   | Lexer.EOF ->

@@ -9,7 +9,8 @@ let () =
           let tp = Parser.top_phrase Lexer.token lexbuf in
           let (new_env, tp') = Typing.top_phrase !env tp in
           env := new_env;
-          Format.printf "@[%a@.%a@.@]" Pprint_ast.top_phrase tp' Pprint_ast.ty tp'.Ast.tp_ty;
+          let tp'' = Cast_remover.remove_cast tp' in
+          Format.printf "@[%a@.@.%a@.@.@]" Pprint_ast.top_phrase tp'' Pprint_ast.ty tp''.Ast.tp_ty;
       with
       | Parser.Error ->
         Format.printf "@[Parsing error@]@."
