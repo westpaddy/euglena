@@ -86,10 +86,17 @@ let instantiate t =
   t'
 
 let rec unref t =
+  let t = repr t in
   match t.t_desc with
-  | Ty_link t ->
-    unref t
+  | Ty_var _ | Ty_const _ ->
+    t
+  | Ty_fun (t1, t2) ->
+    let t1' = unref t1 in
+    let t2' = unref t2 in
+    new_ty (Ty_fun (t1', t2'))
   | Ty_refine (t, _, _) ->
     unref t
-  | _ ->
-    t
+  | Ty_link t ->
+    unref t
+  | Ty_subst t ->
+    assert false

@@ -15,7 +15,7 @@ and ty_desc =
 
 and type_expr = {
   te_desc : type_expr_desc;
-  mutable te_ty : ty option;
+  te_ty : ty;
 }[@@deriving show]
 
 and type_expr_desc =
@@ -27,12 +27,13 @@ and type_expr_desc =
 
 and identifier = {
   i_desc : string;
-  mutable i_uid : int;
+  i_uid : int;
+  i_ty : ty;
 }[@@deriving show]
 
 and pattern = {
   p_desc : pat_desc;
-  mutable p_ty :  ty option;
+  p_ty :  ty;
 }[@@deriving show]
 
 and pat_desc =
@@ -42,7 +43,7 @@ and pat_desc =
 
 and expression = {
   e_desc : expr_desc;
-  mutable e_ty : ty option;
+  e_ty : ty;
 }[@@deriving show]
 
 and expr_desc =
@@ -53,11 +54,13 @@ and expr_desc =
   | Expr_var of identifier
   | Expr_int of int
   | Expr_bool of bool
+  | Expr_cast of expression * type_expr
+  | Expr_dyn of expression * ty
 [@@deriving show]
 
 and top_phrase = {
   tp_desc : top_desc;
-  mutable tp_ty : ty option;
+  tp_ty : ty;
 }[@@deriving show]
 
 and top_desc =

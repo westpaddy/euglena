@@ -3,6 +3,11 @@
     font-family: Consolas, 'Courier New', Courier, Monaco, monospace;
 }
 
+#canvas pre {
+    margin: 0;
+    padding: 0;
+}
+
 #canvas ul {
     list-style-type: none;
     padding: 0;

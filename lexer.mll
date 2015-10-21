@@ -20,6 +20,8 @@ rule token = parse
   | '\'' { Parser.QUOTE }
   | '(' { Parser.LPAREN }
   | ')' { Parser.RPAREN }
+  | '[' { Parser.LBRACKET }
+  | ']' { Parser.RBRACKET }
   | '+' { Parser.PLUS }
   | '-' { Parser.MINUS }
   | '*' { Parser.STAR }

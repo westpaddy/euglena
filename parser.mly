@@ -1,18 +1,20 @@
 %{
     open Ast
 
-    let mk_top tp_desc = { tp_desc; tp_ty = None }
-    let mk_expr e_desc = { e_desc; e_ty = None }
-    let mk_pat p_desc = { p_desc; p_ty = None }
-    let mk_id s = { i_desc = s; i_uid = -1 }
-    let mk_type_expr te_desc = { te_desc; te_ty = None }
+    let null_ty () = Types.new_ty (Ty_var "_")
+
+    let mk_top tp_desc = { tp_desc; tp_ty = null_ty () }
+    let mk_expr e_desc = { e_desc; e_ty = null_ty () }
+    let mk_pat p_desc = { p_desc; p_ty = null_ty () }
+    let mk_id s = { i_desc = s; i_uid = -1; i_ty = null_ty () }
+    let mk_type_expr te_desc = { te_desc; te_ty = null_ty () }
 
     let mfun params body =
       List.fold_left (fun e p -> mk_expr (Expr_fun (p, e))) body (List.rev params)
 %}
 
 %token IF THEN ELSE LET REC IN FUN TRUE FALSE
-%token LPAREN RPAREN PLUS MINUS STAR SLASH LT GT EQ RARROW SEMISEMI QUOTE
+%token LPAREN RPAREN PLUS MINUS STAR SLASH LT GT EQ RARROW SEMISEMI QUOTE LBRACKET RBRACKET
 %token COL AT
 %token <int> INT
 %token <string> VAR

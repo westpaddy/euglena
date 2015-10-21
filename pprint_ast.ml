@@ -1,6 +1,6 @@
 open Ast
 
-let rec ty fmt t =
+let rec ty (fmt : Format.formatter) (t : Ast.ty) : unit =
   let subst = ref [] and counter = ref 0 in
   let rec iter weak t =
     match t.t_desc with
@@ -32,17 +32,12 @@ let rec ty fmt t =
   in
   iter false t
 
-and pattern fmt pat =
+and pattern (fmt : Format.formatter) (pat : Ast.pattern) : unit =
   let rec iter weak pat =
     if weak then Format.fprintf fmt "(";
     begin match pat.p_desc with
     | Pat_var x ->
-      begin match pat.p_ty with
-      | Some t ->
-        Format.fprintf fmt "%s/%d : %a" x.i_desc x.i_uid ty t
-      | None ->
-        Format.fprintf fmt "%s/%d" x.i_desc x.i_uid
-      end
+      Format.fprintf fmt "%s/%d : %a" x.i_desc x.i_uid ty x.i_ty
     | Pat_annot (p, _) ->
       iter false p
     end;
@@ -50,7 +45,7 @@ and pattern fmt pat =
   in
   iter true pat
 
-and expression fmt expr =
+and expression (fmt : Format.formatter) (expr : Ast.expression) : unit =
   let rec iter n fmt expr =
     match expr.e_desc with
     | Expr_let (is_rec, p, e1, e2) ->
@@ -65,11 +60,11 @@ and expression fmt expr =
         (iter 0) e2
         (iter 0) e3
     | Expr_fun (p, e) ->
-      Format.fprintf fmt "fun %a ->@ %a"
+      Format.fprintf fmt "(fun %a ->@ %a)"
         pattern p
         (iter 0) e
     | Expr_app (e1, e2) ->
-      Format.fprintf fmt "%a %a"
+      Format.fprintf fmt "(%a %a)"
         (iter 0) e1
         (iter 0) e2
     | Expr_var x ->
@@ -78,6 +73,10 @@ and expression fmt expr =
       Format.fprintf fmt "%d" i
     | Expr_bool b ->
       Format.fprintf fmt "%b" b
+    | Expr_cast (e, te) ->
+      Format.fprintf fmt "(%a :>@ %a)" (iter 0) e ty te.te_ty
+    | Expr_dyn (e, t) ->
+      Format.fprintf fmt "(%a :>@ %a)" (iter 0) e ty t
   in
   iter 0 fmt expr
 

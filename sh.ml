@@ -16,14 +16,19 @@ let process s =
   | Typing.Not_bound x ->
     Format.fprintf Format.str_formatter "Variable %s is not bound" x.Ast.i_desc;
     Format.flush_str_formatter ()
-  | Typing.Unify ->
-    Format.fprintf Format.str_formatter "Typing error";
+  | Typing.Unify tl ->
+    Format.fprintf Format.str_formatter "Typing error:@.";
+    List.iter (fun (t1, t2) ->
+      Format.fprintf Format.str_formatter "@[%a, %a@]@." Pprint_ast.ty t1 Pprint_ast.ty t2
+    ) (List.tl (List.rev tl));
     Format.flush_str_formatter ()
 
 let append_echo c s =
   let li = Dom_html.createLi Dom_html.document in
   Dom.appendChild c li;
-  Dom.appendChild li (Dom_html.document##createTextNode(Js.string s))
+  let pre = Dom_html.createPre Dom_html.document in
+  Dom.appendChild pre (Dom_html.document##createTextNode(Js.string s));
+  Dom.appendChild li pre
 
 let rec append_line c =
   let li = Dom_html.createLi Dom_html.document in
