@@ -1,9 +1,9 @@
 .PHONY: all test clean
 all:
-	ocamlbuild -j 0 -use-ocamlfind -use-menhir schale.byte
+	ocamlbuild -j 0 -use-ocamlfind -use-menhir -no-plugin schale.byte
 
 test:
-	ocamlbuild -j 0 -use-ocamlfind -use-menhir test.byte
+	ocamlbuild -j 0 -use-ocamlfind -use-menhir -no-plugin test.byte
 	./test.byte
 
 web:
