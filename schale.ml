@@ -14,6 +14,8 @@ let () =
       with
       | Parser.Error ->
         Format.printf "@[Parsing error@]@."
+      | Typing.Not_bound x ->
+        Format.printf "Variable %s is not bound@." x.Ast.i_desc
       | Typing.Unify _ ->
         Format.printf "Type error@."
       end

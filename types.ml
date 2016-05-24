@@ -42,7 +42,9 @@ let cleanup_types () =
 
 let rec copy t =
   let rec copy_desc = function
-    | Ty_var _ | Ty_const _ as d -> d
+    | Ty_var _ as d -> d
+    | Ty_const (x, tl) ->
+      Ty_const (x, List.map copy tl)
     | Ty_fun (t1, t2) -> Ty_fun (copy t1, copy t2)
     | Ty_refine (t, p, e) -> Ty_refine (copy t, p, e)
     | Ty_link t -> copy_desc t.t_desc
@@ -62,8 +64,10 @@ let rec copy t =
 
 let iter f t =
   match t.t_desc with
-  | Ty_var _ | Ty_const _ ->
+  | Ty_var _ ->
     ()
+  | Ty_const (_, tl) ->
+    List.iter f tl
   | Ty_fun (t1, t2) ->
     f t1; f t2
   | Ty_refine (t, p, e) ->

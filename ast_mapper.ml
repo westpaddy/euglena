@@ -77,6 +77,7 @@ module E = struct
         Expr_var (iter.identifier iter i)
       | Expr_int _ as d -> d
       | Expr_bool _ as d -> d
+      | Expr_nil as d -> d
       | Expr_cast (e, te) ->
         Expr_cast (iter.expression iter e, iter.type_expr iter te)
       | Expr_dyn (e, t) ->

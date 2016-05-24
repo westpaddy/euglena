@@ -15,8 +15,11 @@ let rec ty (fmt : Format.formatter) (t : Ast.ty) : unit =
         Format.fprintf fmt "'%s" x
       else
         Format.fprintf fmt "'_%s" x
-    | Ty_const x ->
+    | Ty_const (x, []) ->
       Format.fprintf fmt "%s" x
+    | Ty_const (x, tl) ->
+      Format.fprintf fmt "(%a)%s"
+        (Format.pp_print_list ty) tl x
     | Ty_fun (t1, t2) ->
       if weak then Format.fprintf fmt "(";
       iter true t1;
@@ -73,6 +76,8 @@ and expression (fmt : Format.formatter) (expr : Ast.expression) : unit =
       Format.fprintf fmt "%d" i
     | Expr_bool b ->
       Format.fprintf fmt "%b" b
+    | Expr_nil ->
+      Format.fprintf fmt "[]"
     | Expr_cast (e, te) ->
       Format.fprintf fmt "(%a :>@ %a)" (iter 0) e ty te.te_ty
     | Expr_dyn (e, t) ->

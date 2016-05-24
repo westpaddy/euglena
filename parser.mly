@@ -15,7 +15,7 @@
 
 %token IF THEN ELSE LET REC IN FUN TRUE FALSE
 %token LPAREN RPAREN PLUS MINUS STAR SLASH LT GT EQ RARROW SEMISEMI QUOTE LBRACKET RBRACKET
-%token COL AT
+%token COL AT COLCOL
 %token <int> INT
 %token <string> VAR
 
@@ -23,6 +23,7 @@
 %right RARROW
 %nonassoc ELSE
 %left LT GT EQ
+%right COLCOL
 %left PLUS MINUS
 %left STAR SLASH
 
@@ -78,6 +79,10 @@ a_expr:
     { mk_expr (Expr_bool true) }
 | FALSE;
     { mk_expr (Expr_bool false) }
+| LBRACKET; RBRACKET;
+    { mk_expr Expr_nil }
+| LPAREN; op = bin_op; RPAREN;
+    { op }
   ;;
 
 %inline bin_op:
@@ -95,6 +100,8 @@ a_expr:
     { mk_expr (Expr_var (mk_id "%>")) }
 | EQ;
     { mk_expr (Expr_var (mk_id "%=")) }
+| COLCOL;
+    { mk_expr (Expr_var (mk_id "%::")) }
   ;;
 
 pat:

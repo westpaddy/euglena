@@ -33,8 +33,9 @@ let rec unify (t1 : Ast.ty) (t2 : Ast.ty) : unit =
         begin match d1, d2 with
           | Ty_fun (t1, t2), Ty_fun (s1, s2) ->
             unify t1 s1; unify t2 s2
-          | Ty_const c1, Ty_const c2 when c1 = c2 ->
-            ()
+          | Ty_const (c1, tl1), Ty_const (c2, tl2)
+            when c1 = c2 && List.length tl1 = List.length tl2 ->
+            List.iter2 unify tl1 tl2
           | Ty_refine (t1, p1, e1), Ty_refine (t2, p2, e2) ->
             unify t1 t2
           | _ ->
@@ -60,7 +61,7 @@ let rec type_expr (env : Env.t) (te : Ast.type_expr) : Ast.type_expr =
         let te2' = iter te2 in
         (Type_fun (te1', te2'), Types.new_ty (Ty_fun (te1'.te_ty, te2'.te_ty)))
       | Type_const x ->
-        (Type_const x, Types.new_ty (Ty_const x)) (* incorrect *)
+        (Type_const x, Types.new_ty (Ty_const (x, []))) (* incorrect *)
       | Type_refine (p, e) ->
         let p', new_env = pattern env p in
         let e' = expression new_env e in
@@ -126,6 +127,9 @@ and expression (env : Env.t) (expr : Ast.expression) : Ast.expression =
       (d, Predef.ty_int)
     | Expr_bool _ as d ->
       (d, Predef.ty_bool)
+    | Expr_nil as d ->
+      let ty = Types.fresh_var () in
+      (d, Predef.ty_list ty)
     | Expr_cast (e, te) ->
       let e' = expression env e in
       let te' = type_expr env te in

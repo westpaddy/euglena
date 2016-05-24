@@ -7,7 +7,7 @@ type ty = {
 and ty_desc =
   | Ty_var of string
   | Ty_fun of ty * ty
-  | Ty_const of string
+  | Ty_const of string * ty list
   | Ty_refine of ty * pattern * expression
   | Ty_link of ty
   | Ty_subst of ty
@@ -54,6 +54,7 @@ and expr_desc =
   | Expr_var of identifier
   | Expr_int of int
   | Expr_bool of bool
+  | Expr_nil
   | Expr_cast of expression * type_expr
   | Expr_dyn of expression * ty
 [@@deriving show]
